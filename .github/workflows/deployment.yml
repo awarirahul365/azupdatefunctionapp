@@ -34,7 +34,6 @@ jobs:
 
       - name: List function app
         run: |
-          # List function apps and store output in a file
           az functionapp list --resource-group 'azpoe-hecmonitor-test' --output json > functionapps.json
           cat functionapps.json
 
@@ -45,5 +44,8 @@ jobs:
 
       - name: List result jq parser
         run: |
-          # Parse the output stored in the file
           cat functionapps.json | jq -r '.[] | select(.name | contains("rahul")) | {name: .name, state: .state}'
+    
+      - name: Deploy function app to azure
+        run: |
+          func azure functionapp publish ${{env.functionApp}} --python
