@@ -44,7 +44,7 @@ jobs:
         run: |
           az functionapp list --resource-group 'azpoe-hecmonitor-test' --output json | jq -r '.[] | select(.name | contains("rahul")) | {name: .name, state: .state}' > functionapps.json
           cat functionapps.json
-          if [[ -s functionapps.json]]; then
+          if [[ -s functionapps.json ]]; then
             echo "Function app already present"
           else
             echo "Creating Function app"
