@@ -44,7 +44,6 @@ jobs:
 
             - name: List result jq parser
               run: |
-                filteredoutput=$($output | jq -r '.[] | select(.name | contains("rahul")) | {name: .name, state: .state}')  
-                echo $filteredoutput
+                echo "$output" | jq -r '.[] | select(.name | contains("rahul")) | {name: .name, state: .state}'
 
             
