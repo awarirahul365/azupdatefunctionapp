@@ -6,44 +6,44 @@ on:
       - main
 
 jobs:
-    build-to-deploy:
-        runs-on: ubuntu-latest
-        env:
-            location: "westeurope"
-            resourceGroup: 'azpoe-hecmonitor-test'
-            storage: 'azpoehecmonitortest'
-            functionApp: 'rahulfunctionappgithubaction'
-            skuStorage: 'Standard_LRS'
-            functionsVersion: '4'
-            pythonVersion: '3.11'
+  build-to-deploy:
+    runs-on: ubuntu-latest
+    env:
+      location: "westeurope"
+      resourceGroup: 'azpoe-hecmonitor-test'
+      storage: 'azpoehecmonitortest'
+      functionApp: 'rahulfunctionappgithubaction'
+      skuStorage: 'Standard_LRS'
+      functionsVersion: '4'
+      pythonVersion: '3.11'
 
-        steps:
+    steps:
 
-            - name: 'Checkout Repo'
-              uses: actions/checkout@v4
-            
-            - name: Az login
-              uses: azure/login@v2
-              with:
-                creds: ${{ secrets.AZURE_CREDENTIALS }}
-                enable-AzPSSession: true
+      - name: 'Checkout Repo'
+        uses: actions/checkout@v4
+      
+      - name: Az login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
 
-            - name: Listing Accounts
-              run: |
-                az account show
+      - name: Listing Accounts
+        run: |
+          az account show
 
-            - name: List function app
-              run: |
-                output=$(az functionapp list --resource-group 'azpoe-hecmonitor-test' --output json)
-                echo $output
+      - name: List function app
+        run: |
+          # List function apps and store output in a file
+          az functionapp list --resource-group 'azpoe-hecmonitor-test' --output json > functionapps.json
+          cat functionapps.json
 
-            - name: Install jq parser
-              run: |
-                sudo apt-get update
-                sudo apt-get install jq
+      - name: Install jq parser
+        run: |
+          sudo apt-get update
+          sudo apt-get install jq
 
-            - name: List result jq parser
-              run: |
-                echo "$output" | jq -r '.[] | select(.name | contains("rahul")) | {name: .name, state: .state}'
-
-            
+      - name: List result jq parser
+        run: |
+          # Parse the output stored in the file
+          cat functionapps.json | jq -r '.[] | select(.name | contains("rahul")) | {name: .name, state: .state}'
