@@ -8,6 +8,11 @@ on:
 jobs:
   build-to-deploy:
     runs-on: ubuntu-latest
+    defaults:
+        run:
+            shell: bash
+    container:
+        image: mcr.microsoft.com/azure-functions/python:4-python3.11-core-tools
     env:
       location: "westeurope"
       resourceGroup: 'azpoe-hecmonitor-test'
