@@ -32,6 +32,19 @@ jobs:
               run: |
                 az account show
 
-            - name: Create Function App
+            - name: List function app
               run: |
-                az functionapp create --name ${{env.functionApp}} --storage-account ${{env.storage}} --consumption-plan-location ${{env.location}} --resource-group ${{env.resourceGroup}} --os-type Linux --runtime python --runtime-version ${{env.pythonVersion}} --functions-version ${{env.functionsVersion}}
+                output=$(az functionapp list --resource-group 'azpoe-hecmonitor-test' --output json)
+                echo $output
+
+            - name: Install jq parser
+              run: |
+                sudo apt-get update
+                sudo apt-get install jq
+
+            - name: List result jq parser
+              run: |
+                filteredoutput=$($output | jq -r '.[] | select(.name | contains("rahul")) | {name: .name, state: .state}')  
+                echo $filteredoutput
+
+            
