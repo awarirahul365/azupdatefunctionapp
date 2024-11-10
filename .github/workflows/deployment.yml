@@ -60,7 +60,7 @@ jobs:
       - name: Fetch Publish Profile
         id: pubprof
         run: |
-          content=$(az functionapp deployment list-publishing-profiles --name ${{env.functionApp}} --resource-group ${{env.resourceGroup}})
+          content=$(az functionapp deployment list-publishing-profiles --name ${{env.functionApp}} --resource-group ${{env.resourceGroup}} --xml | base64)
           echo $content
           echo "profilecontent=$content" >> $GITHUB_OUTPUT
       
