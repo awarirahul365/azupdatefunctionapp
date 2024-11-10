@@ -20,6 +20,8 @@ jobs:
     defaults:
         run:
             shell: bash
+    outputs:
+        publishprofile: ${{steps.pubprof.outputs.profilecontent}}
     steps:
 
       - name: 'Checkout Repo'
@@ -55,6 +57,12 @@ jobs:
         run: |
           az resource update --resource-group ${{env.resourceGroup}} --name scm --namespace Microsoft.Web --resource-type basicPublishingCredentialsPolicies --parent sites/${{env.functionApp}} --set properties.allow=true
 
+      - name: Fetch Publish Profile
+        id: pubprof
+        run: |
+          content=$(az functionapp deployment list-publishing-profiles --name ${{env.functionApp}} --resource-group ${{env.resourceGroup}})
+          echo $content
+          echo "profilecontent=$content" >> $GITHUB_OUTPUT
       
   
   
