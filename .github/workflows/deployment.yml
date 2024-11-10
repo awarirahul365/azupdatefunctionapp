@@ -8,6 +8,15 @@ on:
 jobs:
     build-to-deploy:
         runs-on: ubuntu-latest
+        env:
+            location: "westeurope"
+            resourceGroup: 'azpoe-hecmonitor-test'
+            storage: 'azpoehecmonitortest'
+            functionApp: 'rahulfunctionappgithubaction'
+            skuStorage: 'Standard_LRS'
+            functionsVersion: '4'
+            pythonVersion: '3.11'
+
         steps:
 
             - name: 'Checkout Repo'
@@ -22,3 +31,7 @@ jobs:
             - name: Listing Accounts
               run: |
                 az account show
+
+            - name: Create Function App
+              run: |
+                az functionapp create --name ${{env.functionApp}} --storage-account ${{env.storage}} --consumption-plan-location ${{env.location}} --resource-group ${{env.resourceGroup}} --os-type Linux --runtime python --runtime-version ${{env.pythonVersion}} --functions-version ${{env.functionsVersion}}
