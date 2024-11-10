@@ -5,23 +5,21 @@ on:
     branches:
       - main
 
+env:
+    location: "westeurope"
+    resourceGroup: 'azpoe-hecmonitor-test'
+    storage: 'azpoehecmonitortest'
+    functionApp: 'rahulfunctionappgithubaction'
+    skuStorage: 'Standard_LRS'
+    functionsVersion: '4'
+    pythonVersion: '3.11'
+    AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'
 jobs:
   build-to-deploy:
     runs-on: ubuntu-latest
     defaults:
         run:
             shell: bash
-    container:
-        image: mcr.microsoft.com/azure-functions/python:4-python3.11-core-tools
-    env:
-      location: "westeurope"
-      resourceGroup: 'azpoe-hecmonitor-test'
-      storage: 'azpoehecmonitortest'
-      functionApp: 'rahulfunctionappgithubaction'
-      skuStorage: 'Standard_LRS'
-      functionsVersion: '4'
-      pythonVersion: '3.11'
-
     steps:
 
       - name: 'Checkout Repo'
@@ -50,7 +48,38 @@ jobs:
       - name: List result jq parser
         run: |
           cat functionapps.json | jq -r '.[] | select(.name | contains("rahul")) | {name: .name, state: .state}'
+  
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+        run:
+            shell: bash
+    steps:
+        - name: Checkout Repo
+          uses: actions/checkout@v4
+
+        - name: Setup Python ${{ env.pythonVersion }} Environment
+          uses: actions/setup-python@v4
+          with:
+            python-version: ${{ env.pythonVersion }}
     
-      - name: Deploy function app to azure
-        run: |
-          func azure functionapp publish ${{env.functionApp}} --python
+        - name: 'Resolve Project Dependencies Using Pip'
+          shell: bash
+          run: |
+            pwd
+            pushd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt --target=".python_packages/lib/site-packages"
+            popd
+    
+        - name: 'Run Azure Functions Action'
+          uses: Azure/functions-action@v1
+          id: fa
+          with:
+            app-name: ${{ env.functionApp }}
+            package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+            publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+            scm-do-build-during-deployment: true
+            enable-oryx-build: true
+    
+
