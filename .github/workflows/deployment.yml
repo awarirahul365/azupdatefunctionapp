@@ -62,7 +62,7 @@ jobs:
         run: |
           content=$(az functionapp deployment list-publishing-profiles --name ${{env.functionApp}} --resource-group ${{env.resourceGroup}} --xml | base64)
           echo $content
-          echo "profilecontent=$content" >> $GITHUB_OUTPUT
+          printf "profilecontent=%s\n" "$content" >> "$GITHUB_OUTPUT"
       
   
   
