@@ -68,6 +68,7 @@ jobs:
           path: publishprofile.xml
   deploy-to-azure:
     runs-on: ubuntu-latest
+    needs: [build-to-deploy]
     defaults:
         run:
             shell: bash
