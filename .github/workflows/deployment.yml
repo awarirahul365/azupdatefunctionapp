@@ -20,8 +20,6 @@ jobs:
     defaults:
         run:
             shell: bash
-    outputs:
-        publishprofile: ${{steps.pubprof.outputs.profilecontent}}
     steps:
 
       - name: 'Checkout Repo'
@@ -60,10 +58,29 @@ jobs:
       - name: Fetch Publish Profile
         id: pubprof
         run: |
-          content=$(az functionapp deployment list-publishing-profiles --name ${{env.functionApp}} --resource-group ${{env.resourceGroup}} --xml | base64)
-          echo $content
-          printf "profilecontent=%s\n" "$content" >> "$GITHUB_OUTPUT"
-      
+          az functionapp deployment list-publishing-profiles --name ${{env.functionApp}} --resource-group ${{env.resourceGroup}} --xml > publishprofile.xml
+          cat publishprofile.xml
+
+      - name: Upload to Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Publish-Profile
+          path: publishprofile.xml
+  deploy-to-azure:
+    runs-on: ubuntu-latest
+    defaults:
+        run:
+            shell: bash
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Publish-Profile
+
+      - name: Run command
+        run: |
+          ls -l
+
   
   
     
