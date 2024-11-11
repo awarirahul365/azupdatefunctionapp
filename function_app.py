@@ -4,6 +4,7 @@ import logging
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
 
+# latest code
 @app.route(route="http_trigger_pipelinetest")
 def http_trigger_pipelinetest(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Python HTTP trigger function processed a request.")
