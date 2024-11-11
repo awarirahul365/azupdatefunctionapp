@@ -79,8 +79,14 @@ jobs:
           name: Publish-Profile
 
       - name: Run command
+        id: pubprof
         run: |
-          ls -l
+          pubprofval=$(<publishprofile.xml)
+          echo "::set-output name=pubprofval::$pubprofval"
+      
+      - name: Output Value
+        run: |
+          echo "${{ steps.pubprof.outputs.pubprofval }}"
 
   
   
