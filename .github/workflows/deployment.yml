@@ -14,6 +14,7 @@ env:
     functionsVersion: '4'
     pythonVersion: '3.11'
     AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'
+    localsecret: ${{secrets.LOCAL_SETTINGS_JSON}}
 jobs:
   build-to-deploy:
     runs-on: ubuntu-latest
@@ -21,101 +22,11 @@ jobs:
         run:
             shell: bash
     steps:
-
-      - name: 'Checkout Repo'
-        uses: actions/checkout@v4
-      
-      - name: Az login
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-          enable-AzPSSession: true
-
-      - name: Listing Accounts
+      - name: 'check secret'
+        if: ${{env.localsecret != ''}}
         run: |
-          az account show
-    
-      - name: Install jq parser
-        run: |
-          sudo apt-get update
-          sudo apt-get install jq
-
-      - name: List function app
-        run: |
-          az functionapp list --resource-group 'azpoe-hecmonitor-test' --output json | jq -r '.[] | select(.name | contains("rahul")) | {name: .name, state: .state}' > functionapps.json
-          cat functionapps.json
-          if [[ -s functionapps.json ]]; then
-            echo "Function app already present"
-          else
-            echo "Creating Function app"
-            az functionapp create --name ${{env.functionApp}} --storage-account ${{env.storage}} --consumption-plan-location ${{env.location}} --resource-group ${{env.resourceGroup}} --os-type Linux --runtime python --runtime-version ${{env.pythonVersion}} --functions-version ${{env.functionsVersion}}
-          fi
-
-      - name: Update SCM to True
-        run: |
-          az resource update --resource-group ${{env.resourceGroup}} --name scm --namespace Microsoft.Web --resource-type basicPublishingCredentialsPolicies --parent sites/${{env.functionApp}} --set properties.allow=true
-
-      - name: Fetch Publish Profile
-        id: pubprof
-        run: |
-          az functionapp deployment list-publishing-profiles --name ${{env.functionApp}} --resource-group ${{env.resourceGroup}} --xml > publishprofile.xml
-          cat publishprofile.xml
-
-      - name: Upload to Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Publish-Profile
-          path: publishprofile.xml
-
-  deploy-to-azure:
-    runs-on: ubuntu-latest
-    needs: [build-to-deploy]
-    defaults:
-        run:
-            shell: bash
-    steps:
-      - name: Download Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: Publish-Profile
-
-      - name: Run command
-        id: pubprof
-        run: |
-          pubprofval=$(<publishprofile.xml)
-          echo "::set-output name=pubprofval::$pubprofval"
-      
-      - name: Output Value
-        run: |
-          echo "${{ steps.pubprof.outputs.pubprofval }}"
-
-      - name: Checkout Repo
-        uses: actions/checkout@v4
- 
-      - name: Setup Python ${{ env.pythonVersion }} Environment
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.pythonVersion }}
-   
-      - name: 'Resolve Project Dependencies Using Pip'
-        shell: bash
-        run: |
-          pwd
-          pushd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt --target=".python_packages/lib/site-packages"
-          popd
-   
-      - name: 'Run Azure Functions Action'
-        uses: Azure/functions-action@v1
-        id: fa
-        with:
-          app-name: ${{ env.functionApp }}
-          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          publish-profile: ${{ steps.pubprof.outputs.pubprofval }}
-          scm-do-build-during-deployment: true
-          enable-oryx-build: true
-
+          echo "${{env.localsecret}}" > func.json
+          cat func.json
   
   
     
