@@ -24,6 +24,7 @@ jobs:
     steps:
       - name: 'check secret'
         if: ${{env.localsecret != ''}}
+        continue-on-error: true
         run: |
           echo "${{env.localsecret}}" > func.json
           cat func.json
